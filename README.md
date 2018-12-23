@@ -1,5 +1,6 @@
 # Utility to do codeforces submissions from the commandline
 ## Usage
+Note: All commands sould be ran under the pienv environment, which can be accessed though `pipenv shell`
 First, you have to generate the credentials by running
 ```
 ./main.py <username> <password>
