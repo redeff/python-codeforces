@@ -1,6 +1,6 @@
 # Utility to do codeforces submissions from the commandline
 ## Note
-All commands sould be ran under the pienv environment, which can be accessed though `pipenv shell`
+All commands sould be ran under the pipenv environment, which can be accessed though `pipenv shell`
 ## Logging and submitting
 First, you have to generate the credentials by running
 ```
