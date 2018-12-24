@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import requests, re, json, sys, os
-import auth
+import auth, do
 
 def infer_from_extension(path):
     lala, ext = os.path.splitext(path)
@@ -36,7 +36,13 @@ elif sys.argv[1] == 'submit':
         else:
             language = sys.argv[5]
     else:
-        language = 42
+        language = 42 # code for c++17, the default language
     auth.submit(sys.argv[3], sys.argv[2], sys.argv[4], language, cookies)
+elif sys.argv[1] == 'do':
+    cwd = os.getcwd()
+    if len(sys.argv) < 4:
+        do.contest(cwd, sys.argv[2])
+    else:
+        do.problem(cwd, sys.argv[2], sys.argv[3])
 else:
     raise
