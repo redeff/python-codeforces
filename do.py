@@ -1,51 +1,80 @@
 import requests, re, concurrent.futures, os, webbrowser
 from constants import *
 
-def single_request(tag_url):
-    return (tag_url[0], requests.get(tag_url[1]))
+class Page:
+    def __init__(self, text, contest):
+        self.text = text
+        self.contest = contest
 
-def bunch_of_requests(url_dict):
-    out = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_url = [executor.submit(single_request, (a, b)) for a, b in url_dict.items()]
-        for future in concurrent.futures.as_completed(future_to_url):
-            data = future.result()
-            out[data[0]] = data[1]
+    @classmethod
+    def download(cls, contest, problem=None):
+        url = ""
+        if problem == None:
+            url = f'http://codeforces.com/contest/{contest}/problems'
+        else:
+            url = f'http://codeforces.com/contest/{contest}/problem/{problem}'
 
-    return out
+        text = requests.get(url).text
+        self = Page(text, contest)
 
-def problem_given_page(location, contest, problem, page):
-    # print(page.text)
-    inp_regex = '<div class="input">\s*<div class="title">Input</div>\s*<pre>([\s\S]*?)</pre>\s*</div>'
-    inp = map(lambda x: x.group(1), re.finditer(inp_regex, page))
+        return self
 
-    for i, val in enumerate(inp):
-        with open(os.path.join(location, f'{i}.in'), "w+") as f:
-            f.write(val)
-   
-    out_regex = '<div class="output">\s*<div class="title">Output</div>\s*<pre>([\s\S]*?)</pre>\s*</div>'
-    out = map(lambda x: x.group(1), re.finditer(out_regex, page))
+    def testcases(self):
+        inp_regex = '<div class="input">\s*<div class="title">Input</div>\s*<pre>([\s\S]*?)</pre>\s*</div>'
+        inp = map(lambda x: x.group(1), re.finditer(inp_regex, page))
+       
+        out_regex = '<div class="output">\s*<div class="title">Output</div>\s*<pre>([\s\S]*?)</pre>\s*</div>'
+        out = map(lambda x: x.group(1), re.finditer(out_regex, page))
 
-    for i, val in enumerate(out):
-        with open(os.path.join(location, f'{i}.out'), "w+") as f:
-            f.write(val)
+        return Testcases(inp, out)
 
-def problem_page(contest, problem):
-    return f'http://codeforces.com/contest/{contest}/problem/{problem}'
+    def split(self):
+        out = []
 
-def problem(location, contest, problem):
-    loc = os.path.join(location, contest, problem)
-    os.makedirs(loc)
-    problem_given_page(loc, contest, problem, requests.get(problem_page(contest, problem)).text)
+        parts = re.split('<div class="problemindexholder" problemindex="', self.text)[1:-1]
+        for part in parts:
+            problem = re.search('^[^"]*', part).group(0)
+            out.append(Problem(self.contest, problem, Page(part, self.contest)))
 
-def contest(location, contest):
-    url = f'http://codeforces.com/contest/{contest}/problems'
-    webbrowser.open(url, new=2)
-    page = requests.get(url)
-    parts = re.split('<div class="problemindexholder" problemindex="', page.text)[1:-1]
+        return out
 
-    for part in parts:
-        problem = re.search('^[^"]*', part).group(0)
-        loc = os.path.join(location, contest, problem)
-        os.makedirs(loc)
-        problem_given_page(loc, contest, problem, part)
+class Problem:
+    def __init__(self, contest, problem, page=None):
+        self.contest = contest
+        self.problem = problem
+        if page == None:
+            self.page = Page.download(contest, problem)
+        else:
+            self.page = page
+
+    def testcases(self):
+        return self.page.testcases()
+
+    def save(self, location):
+        loc = os.path.join(location, self.contest, self.problem)
+        self.testcases().save(loc)
+
+class Contest:
+    def __init__(self, contest):
+        self.contest = contest
+
+    def save(self, location):
+        page = Page.download(self.contest)
+        problems = page.split()
+        for problem in problems:
+            problem.save(location)
+
+class Testcases:
+    def __init__(self, inp, out):
+        self.inp = inp
+        self.out = out
+
+    def save(self, location):
+        os.makedirs(location)
+        for i, val in enumerate(self.inp):
+            with open(os.path.join(location, f'{i}.in'), "w+") as f:
+                f.write(val)
+
+        for i, val in enumerate(self.out):
+            with open(os.path.join(location, f'{i}.out'), "w+") as f:
+                f.write(val)

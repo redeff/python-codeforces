@@ -41,8 +41,8 @@ elif sys.argv[1] == 'submit':
 elif sys.argv[1] == 'do':
     cwd = os.getcwd()
     if len(sys.argv) < 4:
-        do.contest(cwd, sys.argv[2])
+        do.Contest(sys.argv[2]).save(cwd)
     else:
-        do.problem(cwd, sys.argv[2], sys.argv[3])
+        do.Problem(sys.argv[2], sys.argv[3]).save(cwd)
 else:
     raise
