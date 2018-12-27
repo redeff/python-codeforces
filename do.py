@@ -21,10 +21,10 @@ class Page:
 
     def testcases(self):
         inp_regex = '<div class="input">\s*<div class="title">Input</div>\s*<pre>([\s\S]*?)</pre>\s*</div>'
-        inp = map(lambda x: x.group(1), re.finditer(inp_regex, page))
+        inp = [x.group(1) for x in re.finditer(inp_regex, self.text)]
        
         out_regex = '<div class="output">\s*<div class="title">Output</div>\s*<pre>([\s\S]*?)</pre>\s*</div>'
-        out = map(lambda x: x.group(1), re.finditer(out_regex, page))
+        out = [x.group(1) for x in re.finditer(out_regex, self.text)]
 
         return Testcases(inp, out)
 
