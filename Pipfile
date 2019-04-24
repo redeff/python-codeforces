@@ -7,9 +7,8 @@ verify_ssl = true
 
 [packages]
 requests = "*"
-concurrent = "*"
 requests-futures = "*"
-webbrowser = "*"
+urllib3 = "*"
 
 [requires]
 python_version = "3.7"
