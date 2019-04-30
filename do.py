@@ -31,7 +31,7 @@ class Page:
     def split(self):
         out = []
 
-        parts = re.split('<div class="problemindexholder" problemindex="', self.text)[1:-1]
+        parts = re.split('<div class="problemindexholder" problemindex="', self.text)[1:]
         for part in parts:
             problem = re.search('^[^"]*', part).group(0)
             out.append(Problem(self.contest, problem, Page(part, self.contest)))
